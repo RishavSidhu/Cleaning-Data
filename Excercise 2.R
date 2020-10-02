@@ -27,8 +27,8 @@ com_vec <- Example[grepl("^//", example)]
 dat_vec <- Example[!grepl("^//", example)]
 date <- strsplit(com_vec[1],":")[[1]][2]
 gsub("^ ", "",date)
-my_list <- strsplit(dat_vec, ";")
-my_list
+list <- strsplit(dat_vec, ";")
+list
 assignFields <- function(x){
   out <- character(3)
   i <- grepl("[[:alpha:]]",x)
@@ -41,9 +41,35 @@ assignFields <- function(x){
   out[3] <- ifelse(length(i)>0, x[3], NA)
   out
 }
-standardFields <- lapply(my_list, assignFields)
+standardFields <- lapply(list, assignFields)
 standardFields
-(my_mat <- matrix(
+mat <- matrix(
   unlist(standardFields)
   , nrow=length(standardFields)
-  , byrow=TRUE))
+  , byrow=TRUE)
+names <- strsplit(com_vec[2:4], ":")
+names <- gsub("^ ", "", 
+              unlist(names)[rep(c(FALSE,TRUE),2)])
+colnames(mat) <- names
+mat
+#2.4
+df1 <- data.frame(mat, stringsAsFactors = F)
+sapply(df1, class)
+codes <- c("man", "woman")
+D <- adist(df1$Gender, codes)
+colnames(D) <- codes
+rownames(D) <- df1$Gender
+D
+i <- apply(D, 1, which.min)
+recoded <- data.frame(gender = df1$Gender, coded = codes[i])
+if (!require("plyr")) install.packages("plyr")
+tmp_vec <- plyr::revalue(recoded$coded)
+df1$Gender <- as.factor(tmp_vec)
+df1
+sapply(df1, class)
+df1$Age..in.years. <- as.integer(df1$Age)
+sapply(df1, class)
+df1$Weight..in.kg. <- gsub(",", ".", df1$Weight)
+df1$Weight..in.kg. <- as.numeric(df1$Weight..in.kg.)
+df1
+sapply(df1, class)
